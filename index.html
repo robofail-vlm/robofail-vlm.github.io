@@ -21,9 +21,39 @@
     <script src="./static/js/bulma-carousel.min.js"></script>
     <script src="./static/js/bulma-slider.min.js"></script>
     <script src="./static/js/index.js"></script>
+
+    <script>
+        function init() {
+            const video = document.getElementById("simulation-menu-video");
+            video.addEventListener("error", () => {
+                console.log("Error loading video: ", video.src), ". Setting default to none";
+                if(video.src.includes("undefined")) {
+                    console.log("Don't have an undefined version of the clip, just crash");
+                    return;
+                }
+                const task = document.getElementById("simulation-menu-task-name").value;
+                const uri = `static/videos/simulation/${task}/undefined.mp4`
+                video.src = uri;
+                video.playbackRate = 1.75;
+                video.play();
+            }, true);
+        }
+
+        function updateFailureModeVideo() {
+            const task = document.getElementById("simulation-menu-task-name").value;
+            const failure = document.getElementById("simulation-menu-failure-mode").value;
+            const video = document.getElementById("simulation-menu-video");
+            const uri = `static/videos/simulation/${task}/vid_${task}_${failure}.mp4`;
+            video.src = uri;
+            video.playbackRate = 1.75;
+            video.play();
+        }
+    </script>
+
 </head>
 
-<body>
+<body onload="init(); updateFailureModeVideo();">
+    <!-- Title / Authors Info -->
     <section class="hero">
         <div class="hero-body">
             <div class="container is-max-desktop">
@@ -37,5 +67,74 @@
             </div>
         </div>
     </section>
+
+    <!-- Failure videos per task -->
+    <section class="section">
+        <div class="container is-max-widescreen">
+            <div class="rows">
+                <div class="rows is-centered ">
+                    <div class="row is-full-width">
+                        <h2 class="title is-3">RoboFail Failure Modes</h2>
+                        <div class="columns">
+                            <div class="column has-text-centered">
+                                <h3 class="title is-5">Failure modes</h3>
+                                Task
+                                <div class="select is-small">
+                                    <select id="simulation-menu-task-name" onchange="updateFailureModeVideo()">
+                                        <option value="basketball_in_hoop" selected="selected">basketball</option>
+                                        <option value="close_box">close box</option>
+                                        <option value="close_laptop_lid">close laptop</option>
+                                        <option value="get_ice_from_fridge">get ice from fridge</option>
+                                        <option value="hockey">hockey</option>
+                                        <option value="insert_onto_square_peg">insert peg</option>
+                                        <option value="meat_on_grill">meat on grill</option>
+                                        <option value="open_drawer">open drawer</option>
+                                        <!-- 
+                                        <option value="put_money_in_safe"> put money in safe</option>
+                                        <option value="reach_and_drag">reach and drag</option>
+                                        <option value="scoop_with_spatula">scoop with spatula</option>
+                                        <option value="setup_chess">setup chessboard</option>
+                                        <option value="slide_block_to_target">slide block</option>
+                                        <option value="stack_cups">stack cups</option>
+                                        <option value="straighten_rope">straighten rope</option>
+                                        <option value="take_item_out_of_drawer">take item out of drawer</option>
+                                        <option value="take_lid_off_saucepan">take lid off saucepan</option>
+                                        <option value="take_money_out_safe">take money out safe</option>
+                                        <option value="take_off_weighing_scales">take off weighing scales</option>
+                                        <option value="take_plate_off_colored_dish_rack">take plate off rack</option>
+                                        <option value="take_shoes_out_of_box">take shoes out of box</option>
+                                        <option value="turn_oven_on">turn oven on</option>
+                                        -->
+                                    </select>
+                                </div>
+                                and failure mode
+                                <div class="select is-small">
+                                    <select id="simulation-menu-failure-mode" onchange="updateFailureModeVideo()">
+                                        <option value="grasp" selected="selected">Grasp</option>
+                                        <option value="slip">Slip</option>
+                                        <option value="translation_x">Translation X</option>
+                                        <option value="translation_y">Translation Y</option>
+                                        <option value="translation_z">Translation Z</option>
+                                        <option value="rotation_x">Rotation X</option>
+                                        <option value="rotation_y">Rotation Y</option>
+                                        <option value="rotation_z">Rotation Z</option>
+                                        <option value="no_rotation">No Rotation</option>
+                                        <option value="wrong_sequence">Wrong Sequence</option>
+                                        <!--<option value="wrong_object">Wrong Object</option>-->
+                                    </select>
+                                </div>
+                                <br>
+                                <br>
+                                <video id="simulation-menu-video" muted autoplay loop>
+                                    <source src="static/videos/simulation/basketball_in_hoop/vid_basketball_in_hoop_grasp.mp4" type="video/mp4">
+                                </video>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
 </body>
 </html>
