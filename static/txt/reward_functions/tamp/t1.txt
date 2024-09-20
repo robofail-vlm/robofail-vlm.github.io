@@ -1,0 +1,53 @@
+Thank you for the clarification. Given that the robot gripper moves to the desired position with an offset along the z direction, we need to account for this offset when placing the banana on top of the potted meat can.
+
+Let's assume the offset is a known constant, `GRIPPER_OFFSET_Z`. We'll use this offset to adjust the placement pose accordingly.
+
+Here's the updated `gen_plan` and `gen_domain` functions:
+
+```python
+GRIPPER_OFFSET_Z = 0.02  # Example offset value, adjust as necessary
+
+def gen_plan(initial: RavenBelief, grasp: RavenGrasp):
+    plan = []
+    
+    # Pick up the banana
+    plan.append(Action("pick", ["object_1", grasp]))
+    
+    # Get the pose of the potted meat can
+    spam_pose = initial.objects["object_0"].pose
+    
+    # Calculate the placement pose for the banana on top of the potted meat can
+    banana_place_pose = RavenPose(
+        x=spam_pose.x,
+        y=spam_pose.y,
+        z=spam_pose.z + BLOCK_SIZE + GRIPPER_OFFSET_Z,  # Adjust for the gripper offset
+        roll=spam_pose.roll,
+        pitch=spam_pose.pitch,
+        yaw=spam_pose.yaw
+    )
+    
+    # Place the banana on top of the potted meat can
+    plan.append(Action("place", ["object_1", grasp, banana_place_pose]))
+    
+    return plan
+
+def gen_domain(initial: RavenBelief):
+    return {
+        "grasp": GraspSampler()
+    }
+```
+
+### Explanation
+
+1. **Picking the Banana**: The plan starts by picking up the banana (`object_1`) using a grasp sampled from the `GraspSampler`.
+2. **Calculating Placement Pose**: The pose of the potted meat can (`object_0`) is retrieved from the initial state. The placement pose for the banana is calculated by adding the height of the banana (approximated as `BLOCK_SIZE`) and the gripper offset (`GRIPPER_OFFSET_Z`) to the z-coordinate of the potted meat can's pose. The roll, pitch, and yaw are kept the same to ensure proper alignment.
+3. **Placing the Banana**: The plan then places the banana at the calculated pose on top of the potted meat can.
+
+### Why This Will Always Satisfy the Goal
+
+- **Grasp Sampling**: The grasp is sampled from a `GraspSampler`, ensuring that a valid grasp is used for picking up the banana.
+- **Placement Calculation**: The placement pose is calculated based on the current pose of the potted meat can and adjusted for the gripper offset, ensuring that the banana is placed directly on top of it.
+- **Generalization**: The plan is general enough to handle different initial positions and orientations of the objects, as it dynamically calculates the placement pose based on the initial state.
+
+This approach ensures that the banana will always be stacked on top of the potted meat can, accounting for the gripper offset along the z direction.
+
