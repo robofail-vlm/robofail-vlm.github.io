@@ -1,0 +1,25 @@
+def compute_dense_reward(self, obs: Any, action: torch.Tensor, info: Dict):
+
+    # Calculate the distance from the TCP to the T-shaped peg
+    tcp_to_obj_dist = torch.linalg.norm(self.tee.pose.p - self.agent.tcp.pose.p, axis=1)
+    reaching_reward = 1 - torch.tanh(5 * tcp_to_obj_dist)
+    reward = reaching_reward
+
+    # Calculate the pseudo-rendered intersection area for the T-shaped peg in the goal region
+    intersection_area = self.pseudo_render_intersection()
+    intersection_reward = intersection_area / self.intersection_thresh
+    reward += intersection_reward
+
+    # Calculate the distance from the TCP to the end-effector goal position
+    tcp_to_goal_dist = torch.linalg.norm(self.ee_goal_pos.pose.p - self.agent.tcp.pose.p, axis=1)
+    end_effector_goal_reward = 1 - torch.tanh(5 * tcp_to_goal_dist)
+    reward += end_effector_goal_reward * (intersection_area >= self.intersection_thresh)
+
+    # Adding a penalty term for misalignment along the x direction
+    tcp_to_obj_x_dist = torch.abs(self.tee.pose.p[:, 0] - self.agent.tcp.pose.p[:, 0])
+    alignment_penalty = -0.5 * torch.tanh(5 * tcp_to_obj_x_dist)
+    reward += alignment_penalty
+
+    # Reward for achieving the task success condition
+    reward[info["success"]] = 3.0
+    return reward
