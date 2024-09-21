@@ -1,7 +1,7 @@
 $(document).ready(function() {
     var options = {
         slidesToScroll: 1,
-        slidesToShow: 1,
+        slidesToShow: 3,
         loop: true,
         infinite: true,
         autoplay: false,
