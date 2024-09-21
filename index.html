@@ -55,7 +55,7 @@
 
         timeoutIds = [];
 
-        function populateDemo(imgs, num) {
+        function populateDemo(imgs, num, show_alt = true) {
             // Get the expanded image
             var expandImg = document.getElementById("expandedImg-" + num);
             // Get the image text
@@ -71,25 +71,34 @@
             video.play();
             video.removeAttribute('controls');
 
-            console.log(expandImg.src);
-            // Use the value of the alt attribute of the clickable image as text inside the expanded image
-            var qa = imgs.alt.split("[sep]");
-            imgText.innerHTML = qa[0];
-            answer.innerHTML = "";
-            // Show the container element (hidden with CSS)
-            expandImg.parentElement.style.display = "block";
-            for (timeoutId of timeoutIds) {
-                clearTimeout(timeoutId);
-            }
+            if (show_alt) {
+                console.log(expandImg.src);
 
-            // NOTE (wliang): Modified from original to read from file instead
-            fetch(qa[1])
-                .then(response => response.text())
-                .then(contents => {
-                    // Call the processData function and pass the contents as an argument
-                    typeWriter(contents, 0, qa[0], num);
-                })
-                .catch(error => console.error('Error reading file:', error));
+                imgText.style.display = "block";
+                answer.style.display = "block";
+                // Use the value of the alt attribute of the clickable image as text inside the expanded image
+                var qa = imgs.alt.split("[sep]");
+                imgText.innerHTML = qa[0];
+                answer.innerHTML = "";
+                // Show the container element (hidden with CSS)
+                expandImg.parentElement.style.display = "block";
+                for (timeoutId of timeoutIds) {
+                    clearTimeout(timeoutId);
+                }
+
+                // NOTE (wliang): Modified from original to read from file instead
+                fetch(qa[1])
+                    .then(response => response.text())
+                    .then(contents => {
+                        // Call the processData function and pass the contents as an argument
+                        typeWriter(contents, 0, qa[0], num);
+                    })
+                    .catch(error => console.error('Error reading file:', error));
+            }
+            else {
+                imgText.style.display = "none";
+                answer.style.display = "none";
+            }
         }
 
         function typeWriter(txt, i, q, num) {
@@ -248,6 +257,15 @@
                         <img src="static/videos/tamp/t3.png" width="18%" style="border-radius: 5px;" alt='<b>Task 3</b>, best Aha Improved Task-plan:
                         [sep]
                         static/txt/reward_functions/tamp/t3.txt' onclick="populateDemo(this, 1);">
+                    </div>
+
+                    <br>
+                    <p style="font-size: 1.5em"><b>Manipulate Anything</b></p>
+                    <div class="col-md-4 col-sm-4 col-xs-4">
+                        <img src="static/videos/ma/pick_and_lift.png" width="18%" style="border-radius: 5px;" onclick="populateDemo(this, 1, false);">
+                        <img src="static/videos/ma/pick_up_cup.png" width="18%" style="border-radius: 5px;" onclick="populateDemo(this, 1, false);">
+                        <img src="static/videos/ma/put_block.png" width="18%" style="border-radius: 5px;" onclick="populateDemo(this, 1, false);">
+                        <img src="static/videos/ma/sort_mustard.png" width="18%" style="border-radius: 5px;" onclick="populateDemo(this, 1, false);">
                     </div>
                 </div>
                 <div class="row border rounded" style="padding-top:12px; padding-bottom:12px;">
