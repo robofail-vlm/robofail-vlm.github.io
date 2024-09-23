@@ -1,0 +1,48 @@
+def compute_dense_reward(self, obs: Any, action: torch.Tensor, info: Dict):
+
+       # Distance from TCP to object
+       tcp_to_obj_dist = torch.linalg.norm(
+           self.obj.pose.p - self.agent.tcp.pose.p, axis=1
+       )
+       reaching_reward = 1 - torch.tanh(5 * tcp_to_obj_dist)
+       reward = reaching_reward
+
+
+       # Reward for grasping the object
+       is_grasped = info["is_grasped"]
+       reward += is_grasped
+
+
+       # Introducing a penalty for missing the grasp
+       missed_grasp_penalty = torch.where(is_grasped == 0, -0.5, 0.0)
+       reward += missed_grasp_penalty
+
+
+       # Reward for grasping with proper rotation (introducing a reward for rotation alignment)
+       rotation_alignment = 1 - torch.tanh(5 * torch.abs(self.agent.tcp.pose.q - self.obj.pose.q).sum())
+       reward += rotation_alignment * is_grasped
+
+
+       # Introducing a penalty for misalignment during grasp
+       misalignment_penalty = torch.where(rotation_alignment < 0.5, -0.5, 0.0)
+       reward += misalignment_penalty * is_grasped
+
+
+       # Distance from object to goal
+       obj_to_goal_dist = torch.linalg.norm(
+           self.goal_site.pose.p - self.obj.pose.p, axis=1
+       )
+       place_reward = 1 - torch.tanh(5 * obj_to_goal_dist)
+       reward += place_reward * is_grasped
+
+
+       # Reward for lifting the object
+       lift_reward = torch.where(
+           self.obj.pose.p[:, 2] > 0.1, 1.0, 0.0
+       )  # Assuming 0.1 as the threshold height for lifting
+       reward += lift_reward * is_grasped
+
+
+       # Final success reward
+       reward[info["success"]] = 6
+       return reward
