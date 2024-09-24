@@ -223,27 +223,28 @@
         </div>
     </section>
 
-    <section class="section">
-        <div class="container is-max-widescreen">
-            <!-- Experiments. -->
-            <div class="columns is-centered has-text-centered">
-                <div class="column">
-                    <h2 class="title is-3">Overview of AHA</h2>
-                     <img src="static/images/overview_aha.png" />
-                    <p class="caption">
-                        The data generation for AHA is accomplished by
-                        taking a normal task trajectory in simulation and procedurally perturbing all keyframes using our
-                        taxonomy of failure modes. Through FailGen, we systematically alter keyframes to synthesize
-                        failure demonstrations conditioned on the original tasks. Simultaneously, we generate corresponding
-                        query and answer prompts for each task and failure mode, which are used for instruction-tuning.
-                        (Bottom) The instruction-tuning pipeline follows the same fine-tuning procedure as LLaVA-v1.5, where we fine-tune only the LLM base model—in this case, LLaMA-2-13B and the
-                        projection linear layers, while freezing the rest of the mode
-                    </p>
-                </div>
+   <section class="section">
+    <div class="container is-max-widescreen">
+        <!-- Experiments. -->
+        <div class="columns is-centered has-text-centered">
+            <div class="column">
+                <h2 class="title is-3">Overview of AHA</h2>
+                <img src="static/images/overview_aha.png" style="max-width: 70%; height: auto;" />
+                <p class="caption">
+                    The data generation for AHA is accomplished by
+                    taking a normal task trajectory in simulation and procedurally perturbing all keyframes using our
+                    taxonomy of failure modes. Through FailGen, we systematically alter keyframes to synthesize
+                    failure demonstrations conditioned on the original tasks. Simultaneously, we generate corresponding
+                    query and answer prompts for each task and failure mode, which are used for instruction-tuning.
+                    (Bottom) The instruction-tuning pipeline follows the same fine-tuning procedure as LLaVA-v1.5, where we fine-tune only the LLM base model—in this case, LLaMA-2-13B and the
+                    projection linear layers, while freezing the rest of the model.
+                </p>
             </div>
-            <!--/ Experiments. -->
         </div>
-    </section>
+        <!--/ Experiments. -->
+    </div>
+</section>
+
 
     <!-- Failure videos per task -->
             <section class="section">
