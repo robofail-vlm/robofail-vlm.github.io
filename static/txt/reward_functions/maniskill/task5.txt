@@ -1,33 +1,44 @@
 def compute_dense_reward(self, obs: Any, action: torch.Tensor, info: Dict):
-
-    # Distance from the TCP (Tool Center Point) to cubeA
-    tcp_to_cubeA_dist = torch.linalg.norm(
-    self.cubeA.pose.p - self.agent.tcp.pose.p, axis=1
+    # Compute the distance between the TCP (tool center point) and the handle
+    tcp_to_handle_dist = torch.linalg.norm(
+        info["handle_link_pos"] - self.agent.tcp.pose.p, axis=1
     )
-    reaching_reward = 1 - torch.tanh(5 * tcp_to_cubeA_dist)
+    reaching_reward = 1 - torch.tanh(5 * tcp_to_handle_dist)
     reward = reaching_reward
 
-    # Reward for grasping cubeA
-    is_cubeA_grasped = info["is_cubeA_grasped"]
-    reward += is_cubeA_grasped
+    # Compute the reward for grasping the handle
+    is_grasped = self.agent.is_grasping(self.handle_link)
+    reward += is_grasped
 
-    # Distance from cubeA to cubeB along the x and y directions (ignore z)
-    cubeA_to_cubeB_dist_xy = torch.linalg.norm(
-    self.cubeB.pose.p[..., :2] - self.cubeA.pose.p[..., :2], axis=1
+
+    # Compute the distance the drawer has been pulled out
+    open_frac = (self.handle_link.joint.qpos - self.handle_link.joint.limits[..., 0]) / (
+        self.handle_link.joint.limits[..., 1] - self.handle_link.joint.limits[..., 0]
     )
-    stacking_reward_xy = 1 - torch.tanh(5 * cubeA_to_cubeB_dist_xy)
-    reward += stacking_reward_xy * is_cubeA_grasped
+    open_reward = 1 - torch.tanh(5 * (self.min_open_frac - open_frac))
+    reward += open_reward * is_grasped
 
-    # Penalty for misalignment in the z direction
-    z_offset_penalty = torch.abs(self.cubeB.pose.p[..., 2] - self.cubeA.pose.p[..., 2])
-    reward -= z_offset_penalty * is_cubeA_grasped
 
-    # Reward for keeping cubeA static
-    is_cubeA_static = info["is_cubeA_static"]
-    static_reward = 1 - torch.tanh(5 * torch.linalg.norm(self.agent.robot.get_qvel()[..., :-2], axis=1))
-    reward += static_reward * info["is_cubeA_on_cubeB"]
+    # Encourage a progressive motion of opening the drawer: add positive reward only if drawer's open_frac is increasing
+    drawer_change = open_frac - getattr(self, '_prev_open_frac', open_frac)
+    progressive_reward = drawer_change.where(drawer_change > 0, torch.tensor(0.0))
+    reward += progressive_reward * 10  # Multiplier adjusted to emphasize its importance
+    self._prev_open_frac = open_frac
 
-    # Final success reward
-    reward[info["success"]] = 8
+
+    # Compute the static reward to encourage the agent to keep the drawer open
+    link_is_static = (
+        torch.linalg.norm(self.handle_link.angular_velocity, axis=1) <= 1
+    ) & (torch.linalg.norm(self.handle_link.linear_velocity, axis=1) <= 0.1)
+    static_reward = 1 - torch.tanh(5 * (1 - link_is_static.float()))
+    reward += static_reward * info["open_enough"]
+
+
+    # Penalty for y-direction offset movement after grasping
+    y_offset_penalty = torch.abs(self.agent.tcp.pose.p[:, 1] - info["handle_link_pos"][:, 1])
+    reward -= y_offset_penalty * is_grasped
+
+
+    # Add a large reward if the task is successfully completed
+    reward[info["success"]] = 5.0
     return reward
-
