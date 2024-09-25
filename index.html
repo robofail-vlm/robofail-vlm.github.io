@@ -213,24 +213,24 @@
                             vision-language models (VLMs) and large language models (LLMs) have enhanced robots' spatial
                             reasoning and problem-solving capabilities, these models often struggle to recognize and
                             reason about failures, limiting their effectiveness in real-world applications. In this paper,
-                            we introduce Aha, an open-source VLM specifically designed to detect and reason about failures
+                            we introduce AHA, an open-source VLM specifically designed to detect and reason about failures
                             in robotic manipulation through natural language. By framing failure detection as a free-form
-                            reasoning task, Aha identifies failures and generates detailed explanations adaptable across
+                            reasoning task, AHA identifies failures and generates detailed explanations adaptable across
                             various robots, tasks, and environments in both simulation and real-world scenarios. To fine-tune
                             Aha, we developed FailGen, a scalable simulation framework that procedurally generates
                             the AHA dataset — the first large-scale dataset of robotic failure trajectories—by perturbing
                             successful demonstrations from the RLBench simulator. Despite being trained solely on the AHA dataset,
-                            Aha generalizes effectively to real-world failure datasets, different robotic systems, and
+                            AHA generalizes effectively to real-world failure datasets, different robotic systems, and
                             unseen tasks. It surpasses the second-best model by 10.3% and exceeds the average performance
                             of all six compared models—including five state-of-the-art VLMs and one model employing in-context
-                            learning—by 35.3% across multiple metrics and datasets. Moreover, we integrate Aha into three
+                            learning—by 35.3% across multiple metrics and datasets. Moreover, we integrate AHA into three
                             VLM/LLM-assisted manipulation frameworks. Its natural language failure feedback enhances error recovery
                             and policy performance through methods such as improving reward functions with Eureka reflection,
                             optimizing task and motion planning, and verifying sub-task success in zero-shot robotic manipulation.
                             Our approach achieves an average task success rate 21.4% higher than GPT-4 models. Our contributions
                             are threefold: (1) developing FailGen and curating the AHA dataset, enabling scalable
-                            procedural generation of failure demonstrations; (2) instruction-tuning Aha for advanced failure
-                            reasoning in manipulation tasks, outperforming existing models; and (3) integrating Aha into
+                            procedural generation of failure demonstrations; (2) instruction-tuning AHA for advanced failure
+                            reasoning in manipulation tasks, outperforming existing models; and (3) integrating AHA into
                             downstream robotic systems, demonstrating improved error correction and policy performance. 
                         </p>
                     </div>
