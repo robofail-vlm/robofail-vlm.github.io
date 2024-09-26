@@ -1,63 +1,22 @@
-To address the issue of the robot missing the banana during the grasp attempt, we need to ensure that the grasp sampler provides a valid and feasible grasp. Additionally, we should verify that the placement pose is correctly calculated and within the bounds of the table.
+def gen_plan(initial:RavenBelief, x_offset_yellow:float, y_offset_yellow:float, x_offset_green:float, y_offset_green:float, z_offset:float):
+    plan = []
 
-Here's an updated version of the `gen_plan` and `gen_domain` functions with improved grasping and placement logic:
+    # Identifying the objects
+    yellow_block = initial.objects["object_0"]
+    green_block = initial.objects["object_1"]
+    bowl = initial.objects["object_3"]
 
-```python
-def gen_plan(initial: RavenBelief, grasp_banana: RavenGrasp, x_offset: float, y_offset: float):
-    plan = []
-    
-    # Pick up the banana
-    plan.append(Action("pick", ["object_1", grasp_banana]))
-    
-    # Calculate the placement pose for the banana on top of the potted meat can
-    spam_can_pose = initial.objects["object_0"].pose
-    place_pose = RavenPose(
-        x=spam_can_pose.x + x_offset,
-        y=spam_can_pose.y + y_offset,
-        z=spam_can_pose.z + BLOCK_SIZE  # Assuming BLOCK_SIZE is the height of the potted meat can
-    )
-    
-    # Ensure the placement pose is within the table bounds
-    place_pose.x = max(TABLE_BOUNDS[0][0], min(TABLE_BOUNDS[0][1], place_pose.x))
-    place_pose.y = max(TABLE_BOUNDS[1][0], min(TABLE_BOUNDS[1][1], place_pose.y))
-    
-    # Place the banana on top of the potted meat can
-    plan.append(Action("place", ["object_1", grasp_banana, place_pose]))
-    
-    return plan
+    # Adjusting the z-coordinate for the placement inside the bowl to account for the offset caused by the gripper
+    # Assuming the bowl's z-coordinate is the top edge of the bowl
+    z_bowl_top = bowl.pose.z + z_offset  # Adjusting for the height of the bowl and any initial offset
 
-def gen_domain(initial: RavenBelief):
-    return {
-        "grasp_banana": GraspSampler(),
-        "x_offset": ContinuousSampler(-BLOCK_SIZE / 2, BLOCK_SIZE / 2),
-        "y_offset": ContinuousSampler(-BLOCK_SIZE / 2, BLOCK_SIZE / 2)
-    }
-```
+    # Picking up the yellow block and placing it inside the bowl with specified offsets
+    plan.append(Action("pick", yellow_block.pose.point))
+    plan.append(Action("place", [bowl.pose.x + x_offset_yellow, bowl.pose.y + y_offset_yellow, z_bowl_top]))
 
-### Explanation
+    # Picking up the green block and placing it on top of the yellow block inside the bowl with specified offsets
+    # Assuming BLOCK_SIZE is the height of each block
+    plan.append(Action("pick", green_block.pose.point))
+    plan.append(Action("place", [bowl.pose.x + x_offset_green, bowl.pose.y + y_offset_green, z_bowl_top + BLOCK_SIZE]))
 
-1. **gen_plan Function**:
-   - **Inputs**: 
-     - `initial`: The initial state of the environment.
-     - `grasp_banana`: A grasp sampled for picking up the banana.
-     - `x_offset` and `y_offset`: Offsets to adjust the placement position of the banana on top of the potted meat can.
-   - **Steps**:
-     - The plan first picks up the banana using the sampled grasp.
-     - It then calculates the placement pose for the banana on top of the potted meat can, considering the offsets and the height of the can.
-     - The placement pose is adjusted to ensure it is within the table bounds.
-     - Finally, it places the banana at the calculated pose.
-
-2. **gen_domain Function**:
-   - **Returns**: A dictionary with samplers for the required parameters.
-     - `grasp_banana`: A sampler for generating grasps for the banana.
-     - `x_offset` and `y_offset`: Continuous samplers for generating offsets within half the block size to ensure the banana is placed on top of the can.
-
-### Why This Will Always Satisfy the Goal
-
-- The `gen_plan` function ensures that the banana is picked up and placed on top of the potted meat can.
-- The `x_offset` and `y_offset` parameters allow for slight adjustments in the placement position, ensuring flexibility while still achieving the goal.
-- The use of samplers for grasps and offsets ensures that the plan can adapt to different initial conditions and constraints.
-- The placement pose is adjusted to ensure it is within the table bounds, preventing any out-of-bounds errors.
-
-This approach guarantees that the banana will be stacked on top of the potted meat can regardless of the specific parameters sampled, as long as they are within the defined bounds. The improved grasping logic should help ensure a successful grasp and placement.
-
+    return plan
